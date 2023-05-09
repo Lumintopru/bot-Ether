@@ -1,0 +1,26 @@
+import requests
+from telegram.ext import Updater, CommandHandler
+
+def start(update, context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Привет! Я бот для отслеживания курса эфира. Введите /eth для получения текущего курса.")
+
+def get_eth_price(update, context):
+    response = requests.get('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd')
+    if response.status_code == 200:
+        data = response.json()
+        eth_price = data['ethereum']['usd']
+        context.bot.send_message(chat_id=update.effective_chat.id, text=f"Текущий курс эфира: ${eth_price}")
+    else:
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Не удалось получить информацию о курсе эфира.")
+
+# Замените 'YOUR_TELEGRAM_BOT_TOKEN' на токен вашего Telegram-бота
+updater = Updater(token='YOUR_TELEGRAM_BOT_TOKEN', use_context=True)
+dispatcher = updater.dispatcher
+
+start_handler = CommandHandler('start', start)
+eth_price_handler = CommandHandler('eth', get_eth_price)
+
+dispatcher.add_handler(start_handler)
+dispatcher.add_handler(eth_price_handler)
+
+updater.start_polling()
